@@ -22,10 +22,10 @@ function Graph_Choice() {
             console.log('blobed: ', blobed);
 
             const reader = new FileReader();
-            reader.onloadend = () => {
+            reader.onload = () => {
                 const base64String = reader.result as string;
                 localStorage.setItem("source", "graph" + graphNumber);
-                localStorage.setItem("image", base64String);
+                localStorage.setItem("image",base64String);
                 navigate("/display_graph");
             };
 

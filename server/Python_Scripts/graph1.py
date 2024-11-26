@@ -4,6 +4,7 @@ import pymongo
 import pandas as pd
 import sys
 import os
+import RNG
 from dotenv import load_dotenv
 
 def connect_mongodb():
@@ -66,6 +67,9 @@ def compareFootTrafficSales(collectionReports, collectionDoorSensor):
 
     # Array for hours between 8 AM and 6 PM
     all_hours = np.arange(8, 19)
+    
+    rand = RNG.RNG()
+    filename = str(rand.generate(20)) + '.png'
 
     # Create plot
     fig, ax = plt.subplots(figsize=(10, 6))
@@ -87,8 +91,6 @@ def compareFootTrafficSales(collectionReports, collectionDoorSensor):
 
     # Display the plot
     plt.tight_layout()
-
-    filename = 'graph1.png'
 
     plt.savefig(filename)
     print(filename)
