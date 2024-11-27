@@ -22,7 +22,7 @@ app.post("/api/upload", uploadController.uploadFile);
 app.get('/graph1', async function(req, res) {
     try {
         const python_output = await controller.run_graph1();
-        const imagePath = path.resolve(__dirname, python_output.slice(0, -2));
+        const imagePath = path.resolve(__dirname, python_output.slice(0, -1));
 
         // Send the generated image to the client
         await new Promise((resolve, reject) => {
@@ -46,7 +46,7 @@ app.get('/graph1', async function(req, res) {
 app.get('/graph2', async function(req, res) {
     try {
         const python_output = await controller.run_graph2();
-        const imagePath = path.resolve(__dirname, python_output.slice(0, -2));
+        const imagePath = path.resolve(__dirname, python_output.slice(0, -1));
 
         // Send the generated image to the client
         await new Promise((resolve, reject) => {
@@ -70,7 +70,7 @@ app.get('/graph2', async function(req, res) {
 app.get('/graph5', async function(req, res) {
     try {
         const python_output = await controller.run_graph5();
-        const imagePath = path.resolve(__dirname, python_output.slice(0, -2));
+        const imagePath = path.resolve(__dirname, python_output.slice(0, -1));
 
         // Send the generated image to the client
         await new Promise((resolve, reject) => {
@@ -94,7 +94,7 @@ app.get('/graph5', async function(req, res) {
 app.get('/graph3', async function(req, res) {
     try {
         const python_output = await controller.run_graph3();
-        const imagePath = path.resolve(__dirname, python_output.slice(0, -2));
+        const imagePath = path.resolve(__dirname, python_output.slice(0, -1));
 
         // Send the generated image to the client
         await new Promise((resolve, reject) => {
@@ -118,7 +118,7 @@ app.get('/graph3', async function(req, res) {
 app.get('/graph4', async function(req, res) {
     try {
         const python_output = await controller.run_graph4();
-        const imagePath = path.resolve(__dirname, python_output.slice(0, -2));
+        const imagePath = path.resolve(__dirname, python_output.slice(0, -1));
 
         // Send the generated image to the client
         await new Promise((resolve, reject) => {
