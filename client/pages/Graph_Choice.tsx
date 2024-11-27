@@ -13,7 +13,7 @@ function Graph_Choice() {
 
     async function handleGraph(graphNumber: number) {
         setLoadingGraph(graphNumber); // Set loading state for the specific graph
-        const url = `/graph` + graphNumber;
+        const url = `/graph${graphNumber}`;
         try {
             const response = await fetch(url);
             console.log('response: ', response);
@@ -22,10 +22,10 @@ function Graph_Choice() {
             console.log('blobed: ', blobed);
 
             const reader = new FileReader();
-            reader.onload = () => {
+            reader.onloadend = () => {
                 const base64String = reader.result as string;
-                localStorage.setItem("source", "graph" + graphNumber);
-                localStorage.setItem("image",base64String);
+                localStorage.setItem("source", `/graph${graphNumber}`)
+                localStorage.setItem("image", base64String);
                 navigate("/display_graph");
             };
 
