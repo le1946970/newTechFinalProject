@@ -7,6 +7,8 @@ function Graph_Choice() {
     const navigate = useNavigate();
     const [loadingGraph, setLoadingGraph] = useState<number | null>(null); // Tracks which graph is loading
 
+    const [selectedDate, setSelectedDate] = useState<string | null>(null); // Tracks the selected date
+
     const handleBack = () => {
         navigate("/home");
     };
@@ -83,26 +85,13 @@ function Graph_Choice() {
                         <h2 className="card-text text-center">Foottraffic vs Sales</h2>
                         <img src={"../sample_graphs/graph1.png"} className="card-img-top" alt="Line Graph Example" />
                         <div className="card-body d-grid gap-2">
-                            {/* Dropdown */}
-                            <select
-                                className="form-select mb-3"
-                                aria-label="Select a month"
-                                onChange={(e) => console.log(`Selected month: ${e.target.value}`)}
-                            >
-                                <option value="" selected disabled>Pick a Month</option>
-                                <option value="January">January</option>
-                                <option value="February">February</option>
-                                <option value="March">March</option>
-                                <option value="April">April</option>
-                                <option value="May">May</option>
-                                <option value="June">June</option>
-                                <option value="July">July</option>
-                                <option value="August">August</option>
-                                <option value="September">September</option>
-                                <option value="October">October</option>
-                                <option value="November">November</option>
-                                <option value="December">December</option>
-                            </select>
+                            {/* Date Picker */}
+                            <input
+                                type="date"
+                                className="form-control mb-3"
+                                value={selectedDate || ""}
+                                onChange={(e) => setSelectedDate(e.target.value)}
+                            />
                             {/* Graph selection */}
                             <button
                                 className={`btn btn-danger text-center ${loadingGraph === 1 ? "disabled" : ""}`}
@@ -118,6 +107,7 @@ function Graph_Choice() {
                         </div>
                     </div>
                 </div>
+
                 {/* Graph 2 */}
                 <div className="col-md-6">
                     <div className="card">
