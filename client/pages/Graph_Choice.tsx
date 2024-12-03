@@ -38,6 +38,33 @@ function Graph_Choice() {
         }
     }
 
+    async function handleGraph1(graphNumber: number) {
+        setLoadingGraph(graphNumber); // Set loading state for the specific graph
+        const url = `/graph1Choice`;
+        try {
+            const response = await fetch(url);
+            console.log('response: ', response);
+
+            const blobed = await response.blob();
+            console.log('blobed: ', blobed);
+
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                const base64String = reader.result as string;
+                localStorage.setItem("source", `/graph${graphNumber}`)
+                localStorage.setItem("image", base64String);
+                navigate("/display_graph");
+            };
+
+            reader.readAsDataURL(blobed);
+        } catch (err) {
+            console.log(err);
+            toast.error("Server error");
+        } finally {
+            setLoadingGraph(null); // Reset loading state
+        }
+    }
+
     return (
         <div className="container">
             <div className="row">
@@ -58,7 +85,7 @@ function Graph_Choice() {
                         <div className="card-body d-grid gap-2">
                             <button
                                 className={`btn btn-danger text-center ${loadingGraph === 1 ? "disabled" : ""}`}
-                                onClick={() => handleGraph(1)}
+                                onClick={() => handleGraph1}
                                 disabled={loadingGraph === 1}
                             >
                                 {loadingGraph === 1 ? (

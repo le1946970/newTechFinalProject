@@ -1,7 +1,7 @@
 import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css"; 
+import "react-toastify/dist/ReactToastify.css";
 
 function First() {
   const navigate = useNavigate();
@@ -86,7 +86,7 @@ function First() {
     <div className="container text-center">
       {/* Toastify container */}
       <ToastContainer />
-      
+
       <div className="row">
         <div className="text-center">
           <img src={"../footflow1.png"} alt="logo" className="img-fluid" />
@@ -108,19 +108,14 @@ function First() {
             Explore Data
           </button>
           <br />
-          <input
-            type="file"
-            name="file"
-            id="myFile"
-            className="btn btn-primary mt-4"
-            accept=".csv"
-            onChange={handleFileChange}
-            ref={fileInputRef} // Attach the ref to the file input
-          />
           <br />
+          <div className="mb-3">
+            <label htmlFor="formFile" className="form-label">Import new invoices' data!</label>
+            <input className="form-control" type="file" id="formFile" accept=".csv" onChange={handleFileChange} ref={fileInputRef} />
+          </div>
           <button
             type="button"
-            className={`btn btn-primary mt-4 ${isUploading ? "disabled" : ""}`}
+            className={`btn btn-custom-darker-gray mt-4 ${isUploading ? "disabled" : ""}`}
             onClick={handleFileUpload}
             disabled={isUploading}
           >
@@ -134,6 +129,8 @@ function First() {
               "Upload CSV"
             )}
           </button>
+
+
           <br />
         </div>
       </div>
