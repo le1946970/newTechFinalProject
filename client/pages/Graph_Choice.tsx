@@ -1,13 +1,14 @@
-//import React from 'react'
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 function Graph_Choice() {
     const navigate = useNavigate();
     const [loadingGraph, setLoadingGraph] = useState<number | null>(null); // Tracks which graph is loading
-
-    const [selectedDate, setSelectedDate] = useState<string | null>(null); // Tracks the selected date
+    const [selectedDate, setSelectedDate] = useState<Date | null>(null); // Tracks selected date
+    const today = new Date(); // Get the current date
 
     const handleBack = () => {
         navigate("/home");
@@ -15,45 +16,15 @@ function Graph_Choice() {
 
     async function handleGraph(graphNumber: number) {
         setLoadingGraph(graphNumber); // Set loading state for the specific graph
-        const url = `/graph${graphNumber}`;
+        const url = `/graph${graphNumber}?date=${selectedDate?.toISOString()}`;
         try {
             const response = await fetch(url);
-            console.log('response: ', response);
-
             const blobed = await response.blob();
-            console.log('blobed: ', blobed);
 
             const reader = new FileReader();
             reader.onloadend = () => {
                 const base64String = reader.result as string;
-                localStorage.setItem("source", `/graph${graphNumber}`)
-                localStorage.setItem("image", base64String);
-                navigate("/display_graph");
-            };
-
-            reader.readAsDataURL(blobed);
-        } catch (err) {
-            console.log(err);
-            toast.error("Server error");
-        } finally {
-            setLoadingGraph(null); // Reset loading state
-        }
-    }
-
-    async function handleGraph1(graphNumber: number) {
-        setLoadingGraph(graphNumber); // Set loading state for the specific graph
-        const url = `/graph1Choice`;
-        try {
-            const response = await fetch(url);
-            console.log('response: ', response);
-
-            const blobed = await response.blob();
-            console.log('blobed: ', blobed);
-
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                const base64String = reader.result as string;
-                localStorage.setItem("source", `/graph${graphNumber}`)
+                localStorage.setItem("source", `/graph${graphNumber}`);
                 localStorage.setItem("image", base64String);
                 navigate("/display_graph");
             };
@@ -77,6 +48,7 @@ function Graph_Choice() {
             </div>
             <h2 className='text-center mt-2'>Possible Graphs to be Generated</h2>
             <h5 className='text-center mb-3'>Pick one of the following graphs and our team will generate them for you</h5>
+
             {/* Graph Options */}
             <div className="row">
                 {/* Graph 1 */}
@@ -86,16 +58,22 @@ function Graph_Choice() {
                         <img src={"../sample_graphs/graph1.png"} className="card-img-top" alt="Line Graph Example" />
                         <div className="card-body d-grid gap-2">
                             {/* Date Picker */}
-                            <input
-                                type="date"
-                                className="form-control mb-3"
-                                value={selectedDate || ""}
-                                onChange={(e) => setSelectedDate(e.target.value)}
-                            />
-                            {/* Graph selection */}
+                            <div className="row mb-4">
+                                <div className="col-md-12 text-center">
+                                    <label htmlFor="datePicker" className="form-label">Select a Date:</label>
+                                    <DatePicker
+                                        selected={selectedDate}
+                                        onChange={(date: Date | null) => setSelectedDate(date)}
+                                        dateFormat="yyyy-MM-dd"
+                                        maxDate={today} // Prevent future dates
+                                        className="form-control"
+                                        placeholderText="Click to select a date"
+                                    />
+                                </div>
+                            </div>
                             <button
                                 className={`btn btn-danger text-center ${loadingGraph === 1 ? "disabled" : ""}`}
-                                onClick={() => handleGraph1(1)}
+                                onClick={() => handleGraph(1)}
                                 disabled={loadingGraph === 1}
                             >
                                 {loadingGraph === 1 ? (
@@ -107,7 +85,6 @@ function Graph_Choice() {
                         </div>
                     </div>
                 </div>
-
                 {/* Graph 2 */}
                 <div className="col-md-6">
                     <div className="card">
@@ -136,7 +113,6 @@ function Graph_Choice() {
                                     "Select *Special* Graph"
                                 )}
                             </button>
-
                         </div>
                     </div>
                 </div>
