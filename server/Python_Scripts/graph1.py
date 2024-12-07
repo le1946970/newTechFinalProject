@@ -18,10 +18,14 @@ def connect_mongodb():
         print("Failed to connect to MongoDB. Please make sure MongoDB is running.")
         sys.exit(1)
 
-def compareFootTrafficSales(collectionReports, collectionDoorSensor):
+def compareFootTrafficSales(collectionReports, collectionDoorSensor, dayChosen):
     # Load data from MongoDB
     reports_data = list(collectionReports.find())
     doorSensor_data = list(collectionDoorSensor.find())
+
+    if not reports_data or not doorSensor_data:
+        print("no_data.png")
+        return
 
     # Convert the data to pandas DataFrames
     doorSensor_df = pd.DataFrame(doorSensor_data)
@@ -37,71 +41,71 @@ def compareFootTrafficSales(collectionReports, collectionDoorSensor):
     reports_df['hour'] = reports_df['Date'].dt.hour
     reports_df['day'] = reports_df['Date'].dt.strftime('%Y-%m-%d')  # Format as YYYY-MM-DD
 
-    # Filter hours between 8 AM and 6 PM
-    doorSensor_df = doorSensor_df[(doorSensor_df['hour'] >= 8) & (doorSensor_df['hour'] <= 18)]
-    reports_df = reports_df[(reports_df['hour'] >= 8) & (reports_df['hour'] <= 18)]
+    # Filter data by the chosen day
+    doorSensor_df = doorSensor_df[doorSensor_df['day'] == dayChosen]
+    reports_df = reports_df[reports_df['day'] == dayChosen]
 
-    # Remove duplicates based on 'Order Name'
-    reports_df_unique = reports_df.drop_duplicates(subset='Order Name')
+    if doorSensor_df['day'].empty or reports_df['day'].empty:
+        filename = 'no_data_for_the_selected_date.png'
+        print(filename)
+    else:
+        # Filter hours between 8 AM and 6 PM
+        doorSensor_df = doorSensor_df[(doorSensor_df['hour'] >= 8) & (doorSensor_df['hour'] <= 18)]
+        reports_df = reports_df[(reports_df['hour'] >= 8) & (reports_df['hour'] <= 18)]
 
-    # Get common days with data in both datasets
-    common_days = set(doorSensor_df['day']).intersection(set(reports_df_unique['day']))
+        # Remove duplicates based on 'Order Name'
+        reports_df_unique = reports_df.drop_duplicates(subset='Order Name')
 
-    # Filter data to only include rows from common days
-    doorSensor_df = doorSensor_df[doorSensor_df['day'].isin(common_days)]
-    reports_df_unique = reports_df_unique[reports_df_unique['day'].isin(common_days)]
+        # Group by hour, then calculate the mean for each hour
+        doorSensor_hourly_avg = doorSensor_df.groupby(['hour']).size()
 
-    # Group by day and hour, then calculate the mean for each hour across all days
-    doorSensor_hourly_avg = doorSensor_df.groupby(['day', 'hour']).size().groupby('hour').mean()
+        # Apply the transformation: divide by 2 because people open the door twice
+        doorSensor_hourly_avg = (doorSensor_hourly_avg / 2)
 
-    # Apply the transformation: divide by 2 because people open the door twice
-    doorSensor_hourly_avg = (doorSensor_hourly_avg / 2)
+        reports_hourly_avg = reports_df_unique.groupby(['hour']).size()
 
-    reports_hourly_avg = reports_df_unique.groupby(['day', 'hour']).size().groupby('hour').mean()
+        # Array for hours between 8 AM and 6 PM
+        all_hours = np.arange(8, 19)
 
-    # Check if there is data to plot
-    if doorSensor_hourly_avg.empty and reports_hourly_avg.empty:
-        print("No data available to display the plot.")
-        return
+        # Create plot
+        fig, ax = plt.subplots(figsize=(10, 6))
 
-    # Array for hours between 8 AM and 6 PM
-    all_hours = np.arange(8, 19)
+        # Plot traffic and invoices
+        ax.bar(all_hours - 0.2, doorSensor_hourly_avg.reindex(all_hours, fill_value=0), width=0.4, label='Average Foot Traffic', color='#4156b4')
+        ax.bar(all_hours + 0.2, reports_hourly_avg.reindex(all_hours, fill_value=0), width=0.4, label='Average Invoices', color='#c87499')
 
-    # Create plot
-    fig, ax = plt.subplots(figsize=(10, 6))
+        # Add labels and title
+        ax.set_xlabel('Hour of Day')
+        ax.set_ylabel('Average Count')
+        ax.set_title(f'Average Hourly Traffic and Invoices for {dayChosen} (Store Open from 8 AM to 6 PM)')
+        ax.set_xticks(all_hours)
+        ax.set_xticklabels([f'{i}:00' for i in all_hours])
+        ax.legend()
 
-    # Plot traffic and invoices
-    ax.bar(all_hours - 0.2, doorSensor_hourly_avg.reindex(all_hours, fill_value=0), width=0.4, label='Average Foot Traffic', color='#4156b4')
-    ax.bar(all_hours + 0.2, reports_hourly_avg.reindex(all_hours, fill_value=0), width=0.4, label='Average Invoices', color='#c87499')
+        # Add grid lines for readability
+        ax.grid(True, which='both', axis='y', linestyle='--', linewidth=0.7, alpha=0.7)
 
-    # Add labels and title
-    ax.set_xlabel('Hour of Day')
-    ax.set_ylabel('Average Count')
-    ax.set_title('Average Hourly Traffic and Invoices (Store Open from 8 AM to 6 PM)')
-    ax.set_xticks(all_hours)
-    ax.set_xticklabels([f'{i}:00' for i in all_hours])
-    ax.legend()
+        # Display the plot
+        plt.tight_layout()
 
-    # Add grid lines for readability
-    ax.grid(True, which='both', axis='y', linestyle='--', linewidth=0.7, alpha=0.7)
+        filename = 'graph1.png'
 
-    # Display the plot
-    plt.tight_layout()
+        plt.savefig(filename)
+        print(filename)
 
-    filename = 'graph1.png'
-
-    plt.savefig(filename)
-    print(filename)
-
-def main():
+def main(dayChosen):
     """Main function."""
     try:
         collectionReports, collectionDoorSensor = connect_mongodb()
-        compareFootTrafficSales(collectionReports, collectionDoorSensor)
+        compareFootTrafficSales(collectionReports, collectionDoorSensor, dayChosen)
+    except IndexError:
+        print("Please provide a date as a command-line argument.")
+        sys.exit(1)
     except Exception as e:
         print(f"An unexpected error occurred: {e}")
         sys.exit(1)
 
 if __name__ == "__main__":
     load_dotenv()  # take environment variables from .env.
-    main()
+    dayChosen = sys.argv[1]
+    main(dayChosen)

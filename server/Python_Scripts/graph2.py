@@ -108,48 +108,53 @@ def plot_pie_and_bar_charts(pie_ratios, pie_labels, multiple_ratios, multiple_la
 def plot_payment_methods(collectionReports):
     # Load data from MongoDB
     reports_data = list(collectionReports.find())
-    reports_df = pd.DataFrame(reports_data)
-
-    # Replace NaN or empty values in 'Payment Method' with 'Cash'
-    reports_df['Payment Method'] = reports_df['Payment Method'].fillna('Cash')
-    reports_df.loc[reports_df['Payment Method'] == '', 'Payment Method'] = 'Cash'
-
-    # Process 'Payment Method' column
-    def process_payment_method(payment_method):
-        if ',' in payment_method:
-            methods = [method.strip().title().replace('_', ' ') for method in payment_method.split(',')]
-            methods.sort()
-            reports_df.loc[reports_df['Payment Method'] == payment_method, 'Original_Payment_Methods'] = ' and '.join(methods)
-            return 'Multiple payment methods'
-        else:
-            # Leave 'Original_Payment_Methods' empty for single payment methods
-            reports_df.loc[reports_df['Payment Method'] == payment_method, 'Original_Payment_Methods'] = None
-            return payment_method.strip().title().replace('_', ' ')
-
-    reports_df['Payment_Method'] = reports_df['Payment Method'].apply(process_payment_method)
-
-    # Filter for multiple payment methods
-    multiple_payment_methods_df = reports_df[reports_df['Original_Payment_Methods'].notna()]
-
-    # Pie chart data
-    payment_counts = reports_df['Payment_Method'].value_counts()
-    pie_ratios = payment_counts / payment_counts.sum()
-    pie_labels = payment_counts.index.tolist()
-
-    # Bar chart data (normalized ratios for multiple methods)
-    multiple_ratios = multiple_payment_methods_df['Original_Payment_Methods'].value_counts()
-    multiple_ratios = multiple_ratios / multiple_ratios.sum()
-    multiple_labels = multiple_ratios.index.tolist()
-
-    # Call appropriate function based on the presence of multiple payment methods
-    if multiple_payment_methods_df.shape[0] > 0:
-        plot_pie_and_bar_charts(pie_ratios, pie_labels, multiple_ratios, multiple_labels)
+    
+    if not reports_data:  # Check if there's no data
+        print("no_data.png")
     else:
-        plot_pie_chart_only(pie_ratios, pie_labels)
+        # Convert the data to a pandas DataFrame
+        reports_df = pd.DataFrame(reports_data)
 
-    filename = 'testt.png'
-    plt.savefig(filename)
-    print(filename)
+        # Replace NaN or empty values in 'Payment Method' with 'Cash'
+        reports_df['Payment Method'] = reports_df['Payment Method'].fillna('Cash')
+        reports_df.loc[reports_df['Payment Method'] == '', 'Payment Method'] = 'Cash'
+
+        # Process 'Payment Method' column
+        def process_payment_method(payment_method):
+            if ',' in payment_method:
+                methods = [method.strip().title().replace('_', ' ') for method in payment_method.split(',')]
+                methods.sort()
+                reports_df.loc[reports_df['Payment Method'] == payment_method, 'Original_Payment_Methods'] = ' and '.join(methods)
+                return 'Multiple payment methods'
+            else:
+                # Leave 'Original_Payment_Methods' empty for single payment methods
+                reports_df.loc[reports_df['Payment Method'] == payment_method, 'Original_Payment_Methods'] = None
+                return payment_method.strip().title().replace('_', ' ')
+
+        reports_df['Payment_Method'] = reports_df['Payment Method'].apply(process_payment_method)
+
+        # Filter for multiple payment methods
+        multiple_payment_methods_df = reports_df[reports_df['Original_Payment_Methods'].notna()]
+
+        # Pie chart data
+        payment_counts = reports_df['Payment_Method'].value_counts()
+        pie_ratios = payment_counts / payment_counts.sum()
+        pie_labels = payment_counts.index.tolist()
+
+        # Bar chart data (normalized ratios for multiple methods)
+        multiple_ratios = multiple_payment_methods_df['Original_Payment_Methods'].value_counts()
+        multiple_ratios = multiple_ratios / multiple_ratios.sum()
+        multiple_labels = multiple_ratios.index.tolist()
+
+        # Call appropriate function based on the presence of multiple payment methods
+        if multiple_payment_methods_df.shape[0] > 0:
+            plot_pie_and_bar_charts(pie_ratios, pie_labels, multiple_ratios, multiple_labels)
+        else:
+            plot_pie_chart_only(pie_ratios, pie_labels)
+
+        filename = 'graph2.png'
+        plt.savefig(filename)
+        print(filename)
 
 def main():
     try:

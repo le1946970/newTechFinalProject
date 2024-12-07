@@ -7,7 +7,7 @@ import "react-datepicker/dist/react-datepicker.css";
 function Graph_Choice() {
     const navigate = useNavigate();
     const [loadingGraph, setLoadingGraph] = useState<number | null>(null); // Tracks which graph is loading
-    const [selectedDate, setSelectedDate] = useState<Date | null>(null); // Tracks selected date
+    const [selectedDate, setSelectedDate] = useState<Date | null>(null); // Explicitly typed as Date or null
     const today = new Date(); // Get the current date
 
     const handleBack = () => {
@@ -16,7 +16,7 @@ function Graph_Choice() {
 
     async function handleGraph(graphNumber: number) {
         setLoadingGraph(graphNumber); // Set loading state for the specific graph
-        const url = `/graph${graphNumber}?date=${selectedDate?.toISOString()}`;
+        const url = `/graph${graphNumber}`;
         try {
             const response = await fetch(url);
             const blobed = await response.blob();
@@ -25,6 +25,48 @@ function Graph_Choice() {
             reader.onloadend = () => {
                 const base64String = reader.result as string;
                 localStorage.setItem("source", `/graph${graphNumber}`);
+                localStorage.setItem("image", base64String);
+                navigate("/display_graph");
+            };
+
+            reader.readAsDataURL(blobed);
+        } catch (err) {
+            console.log(err);
+            toast.error("Server error");
+        } finally {
+            setLoadingGraph(null); // Reset loading state
+        }
+    }
+
+    async function handleGraph1() {
+        if (!selectedDate) {
+            toast.error("No date selected");
+            return;
+        }
+
+        await httpReq(selectedDate);
+    }
+
+    async function httpReq(date: Date){
+        setLoadingGraph(1); // Set loading state for the specific graph
+        const formattedDate = date.toISOString().split("T")[0]; // Extract yy-MM-dd
+        const url = `/graph1?date=${formattedDate}`; // Use the formatted date
+        try {
+            const response = await fetch(url);
+
+            console.log('response: ', response)
+            if (response.status == 400){
+                console.log("No datee")
+                toast.error("No date selectedd")
+                return
+            }
+
+            const blobed = await response.blob();
+
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                const base64String = reader.result as string;
+                localStorage.setItem("source", `/graph${1}`);
                 localStorage.setItem("image", base64String);
                 navigate("/display_graph");
             };
@@ -73,7 +115,7 @@ function Graph_Choice() {
                             </div>
                             <button
                                 className={`btn btn-danger text-center ${loadingGraph === 1 ? "disabled" : ""}`}
-                                onClick={() => handleGraph(1)}
+                                onClick={() => handleGraph1()}
                                 disabled={loadingGraph === 1}
                             >
                                 {loadingGraph === 1 ? (
@@ -121,7 +163,7 @@ function Graph_Choice() {
                 {/* Graph 3 */}
                 <div className="col-md-6">
                     <div className="card">
-                        <h2 className="card-text text-center">Most Popular Items Sold</h2>
+                        <h2 className="card-text text-center">Most Popular Items Sold on average</h2>
                         <img src={"../sample_graphs/graph3.png"} className="card-img-top" alt="Line Graph Example" />
                         <div className="card-body d-grid gap-2">
                             <button
@@ -132,7 +174,18 @@ function Graph_Choice() {
                                 {loadingGraph === 3 ? (
                                     <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
                                 ) : (
-                                    "Select Graph"
+                                    "Select Graph (overall average)"
+                                )}
+                            </button>
+                            <button
+                                className={`btn btn-danger text-center ${loadingGraph === 6 ? "disabled" : ""}`}
+                                onClick={() => handleGraph(6)}
+                                disabled={loadingGraph === 6}
+                            >
+                                {loadingGraph === 6 ? (
+                                    <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                ) : (
+                                    "Select Graph (average per day of the week)"
                                 )}
                             </button>
                         </div>

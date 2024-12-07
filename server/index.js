@@ -5,7 +5,6 @@ const path = require('path');
 const controller = require('./controllers/graph.controller');
 const uploadController = require('./controllers/uploadController'); 
 const bodyParser = require("body-parser");
-const fs = require('fs');
 
 app.use(morgan('tiny'));
 app.use(express.json());
@@ -20,8 +19,11 @@ app.post("/api/upload", uploadController.uploadFile);
 
 // Graph routes that execute Python scripts for generating graphs
 app.get('/graph1', async function(req, res) {
+    // get the formattedDate
+    const currentDate = req.query.date
+
     try {
-        const python_output = await controller.run_graph1();
+        const python_output = await controller.run_graph1(currentDate);
         const imagePath = path.resolve(__dirname, python_output.slice(0, -2));
 
         // Send the generated image to the client
@@ -34,9 +36,6 @@ app.get('/graph1', async function(req, res) {
                 }
             });
         });
-
-        // Clean up the generated image after sending it to the client
-        fs.unlinkSync(imagePath);
     } catch (e) {
         console.log(e);
         res.send({ 'message': e });
@@ -58,9 +57,6 @@ app.get('/graph2', async function(req, res) {
                 }
             });
         });
-
-        // Clean up the generated image after sending it to the client
-        fs.unlinkSync(imagePath);
     } catch (e) {
         console.log(e);
         res.send({ 'message': e });
@@ -82,9 +78,6 @@ app.get('/graph5', async function(req, res) {
                 }
             });
         });
-
-        // Clean up the generated image after sending it to the client
-        fs.unlinkSync(imagePath);
     } catch (e) {
         console.log(e);
         res.send({ 'message': e });
@@ -106,9 +99,27 @@ app.get('/graph3', async function(req, res) {
                 }
             });
         });
+    } catch (e) {
+        console.log(e);
+        res.send({ 'message': e });
+    }
+});
 
-        // Clean up the generated image after sending it to the client
-        fs.unlinkSync(imagePath);
+app.get('/graph6', async function(req, res) {
+    try {
+        const python_output = await controller.run_graph6();
+        const imagePath = path.resolve(__dirname, python_output.slice(0, -2));
+
+        // Send the generated image to the client
+        await new Promise((resolve, reject) => {
+            res.sendFile(imagePath, (err) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve();
+                }
+            });
+        });
     } catch (e) {
         console.log(e);
         res.send({ 'message': e });
@@ -130,9 +141,6 @@ app.get('/graph4', async function(req, res) {
                 }
             });
         });
-
-        // Clean up the generated image after sending it to the client
-        fs.unlinkSync(imagePath);
     } catch (e) {
         console.log(e);
         res.send({ 'message': e });

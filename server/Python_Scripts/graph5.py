@@ -93,62 +93,65 @@ def connect_mongodb():
 def popularPaymentMethod(collectionReports):
     # Load data from MongoDB
     reports_data = list(collectionReports.find())
+    
+    if not reports_data:  # Check if there's no data
+        print("no_data.png")
+    else:
+        # Convert the data to a pandas DataFrame
+        reports_df = pd.DataFrame(reports_data)
 
-    # Convert the data to a pandas DataFrame
-    reports_df = pd.DataFrame(reports_data)
+        # Replace NaN or empty values in 'Payment Method' with 'Cash'
+        reports_df['Payment Method'] = reports_df['Payment Method'].fillna('Cash')
+        reports_df.loc[reports_df['Payment Method'] == '', 'Payment Method'] = 'Cash'
 
-    # Replace NaN or empty values in 'Payment Method' with 'Not available'
-    reports_df['Payment Method'] = reports_df['Payment Method'].fillna('Not available')
-    reports_df.loc[reports_df['Payment Method'] == '', 'Payment Method'] = 'Not available'
+        # Modify the 'Payment Method' to handle commas
+        def process_payment_method(payment_method):
+            if ',' in payment_method:
+                return 'Multiple payment methods'
+            else:
+                return payment_method.strip().title().replace('_', ' ')
 
-    # Modify the 'Payment Method' to handle commas
-    def process_payment_method(payment_method):
-        if ',' in payment_method:
-            return 'Multiple payment methods'
-        else:
-            return payment_method.strip().title().replace('_', ' ')
+        # Apply the process_payment_method function to each row in 'Payment Method'
+        reports_df['Payment_Method'] = reports_df['Payment Method'].apply(process_payment_method)
 
-    # Apply the process_payment_method function to each row in 'Payment Method'
-    reports_df['Payment_Method'] = reports_df['Payment Method'].apply(process_payment_method)
+        # Group by 'Payment_Method' and count occurrences
+        payment_counts = reports_df['Payment_Method'].value_counts()
 
-    # Group by 'Payment_Method' and count occurrences
-    payment_counts = reports_df['Payment_Method'].value_counts()
+        # Check if there is data to plot
+        if payment_counts.empty:
+            print("No data available to display the plot.")
+            return
 
-    # Check if there is data to plot
-    if payment_counts.empty:
-        print("No data available to display the plot.")
-        return
+        # Calculate the percentages for each payment method
+        total = payment_counts.sum()
+        percentages = (payment_counts.values / total) * 100
 
-    # Calculate the percentages for each payment method
-    total = payment_counts.sum()
-    percentages = (payment_counts.values / total) * 100
+        # Define your new specific hex color codes
+        color_hex_codes = [
+            '#4156b4', '#7a44ad', '#a52395', '#c1006f', '#c90043', '#c60606'
+        ]
 
-    # Define your new specific hex color codes
-    color_hex_codes = [
-        '#4156b4', '#7a44ad', '#a52395', '#c1006f', '#c90043', '#c60606'
-    ]
+        # Create a packed-bubble chart
+        bubble_chart = BubbleChart(area=payment_counts.values, bubble_spacing=0.1)
+        bubble_chart.collapse()
 
-    # Create a packed-bubble chart
-    bubble_chart = BubbleChart(area=payment_counts.values, bubble_spacing=0.1)
-    bubble_chart.collapse()
+        # Create the figure with the desired size
+        fig, ax = plt.subplots(figsize=(10, 6), subplot_kw=dict(aspect="equal"))
+        bubble_chart.plot(ax, payment_counts.index, color_hex_codes[:len(payment_counts)], percentages)
+        ax.axis("off")
+        ax.relim()
+        ax.autoscale_view()
+        ax.set_title('Most Popular Payment Methods')
 
-    # Create the figure with the desired size
-    fig, ax = plt.subplots(figsize=(10, 6), subplot_kw=dict(aspect="equal"))
-    bubble_chart.plot(ax, payment_counts.index, color_hex_codes[:len(payment_counts)], percentages)
-    ax.axis("off")
-    ax.relim()
-    ax.autoscale_view()
-    ax.set_title('Most Popular Payment Methods')
+        # Add legend
+        handles = [plt.Line2D([0], [0], marker='o', color='w', markerfacecolor=color, markersize=10) 
+                for color in color_hex_codes[:len(payment_counts)]]
+        ax.legend(handles, payment_counts.index, title="Payment Methods", loc="upper left", bbox_to_anchor=(1, 1))
 
-    # Add legend
-    handles = [plt.Line2D([0], [0], marker='o', color='w', markerfacecolor=color, markersize=10) 
-               for color in color_hex_codes[:len(payment_counts)]]
-    ax.legend(handles, payment_counts.index, title="Payment Methods", loc="upper left", bbox_to_anchor=(1, 1))
-
-    # Save the plot
-    filename = 'packed_bubble_chart_with_legend.png'
-    plt.savefig(filename, bbox_inches='tight')
-    print(filename)
+        # Save the plot
+        filename = 'packed_bubble_chart_with_legend.png'
+        plt.savefig(filename, bbox_inches='tight')
+        print(filename)
 
 def main():
     try:
