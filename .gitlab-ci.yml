@@ -1,0 +1,48 @@
+stages:
+  - install
+  - test
+  - lint
+  - build
+
+cache:
+  paths:
+    - server/node_modules/
+    - public/node_modules/
+    - public/build
+
+lint-job:
+  stage: lint
+  script:
+    - echo "Hello, $GITLAB_USER_LOGIN!"
+    - cd server
+    - npx eslint . 
+
+install-be:
+  stage: install
+  script:
+    - cd server
+    - npm install
+ 
+install-fe:
+  stage: install
+  script:
+    - cd public
+    - npm install
+
+test-job1:
+  stage: test
+  script:
+    - cd server
+    - npm run start-app 
+  artifacts:
+    reports:
+      junit: server/test-results/junit.xml
+
+build-prod:
+  stage: build
+  script:
+    - cd public/
+    - npm run build
+  artifacts:
+    paths:
+      - public/build
