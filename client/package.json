@@ -9,7 +9,9 @@
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "start": "react-scripts start",
     "preview": "vite preview",
-    "e2e": "cypress open"
+    "e2e": "cypress open",
+    "test:cypress": "cypress run --reporter junit --reporter-options 'mochaFile=test-results/cypress-results.xml'",
+    "start-app": "concurrently \"npm --prefix /Users/adm1/Documents/School/newTech/final/newTechFinalProject/server run start\"  --success first \"npm run test:cypress\" --kill-others"
 
   },
   "dependencies": {
