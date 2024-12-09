@@ -30,6 +30,21 @@ install-fe:
     - cd public
     - npm install
 
+test-cypress:
+  stage: test
+  script:
+    - cd public
+    - npm install
+    - npm run test:cypress
+  artifacts:
+    when: always
+    reports:
+      junit: client/test-results/cypress-results.xml
+    paths:
+      - client/test-results/
+  dependencies:
+    - install-fe
+
 test-job1:
   stage: test
   script:

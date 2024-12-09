@@ -1,5 +1,6 @@
 {
     "scripts": {
-        "start-app": "concurrently \"npm start\" \"npm run test\" --success first --kill-others"
+        "start-app": "concurrently \"npm start\" \"npm run test\" --success first --kill-others",
+        "test:cypress": "cypress run --reporter junit --reporter-options 'mochaFile=test-results/cypress-results.xml'"
     }
 }
