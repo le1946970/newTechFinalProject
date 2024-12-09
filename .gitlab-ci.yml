@@ -11,7 +11,7 @@ cache:
     - public/node_modules/
     - public/build
 
-lint-job:
+lint-job: 
   stage: lint
   script:
     - echo "Hello, $GITLAB_USER_LOGIN!"
